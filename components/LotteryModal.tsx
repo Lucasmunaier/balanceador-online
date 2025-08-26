@@ -31,6 +31,15 @@ const LotteryAnimations = () => (
         .animate-pop-in {
             animation: pop-in 0.5s ease-out forwards;
         }
+
+        @keyframes winner-glow {
+            0% { box-shadow: 0 0 0px 0px rgba(45, 212, 191, 0); }
+            50% { box-shadow: 0 0 30px 15px rgba(45, 212, 191, 0.6); }
+            100% { box-shadow: 0 0 0px 0px rgba(45, 212, 191, 0); }
+        }
+        .animate-winner-glow {
+            animation: winner-glow 1.5s ease-out;
+        }
     `}</style>
 );
 
@@ -43,7 +52,8 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
     const [shuffledNumbers, setShuffledNumbers] = useState<number[]>([]);
     const [lastDrawnNumber, setLastDrawnNumber] = useState<number | null>(null);
     const [isDrawing, setIsDrawing] = useState(false);
-    const [error, setError] = useState<string>('');
+    const [error, setError] = useState('');
+    const [isLastDrawWinner, setIsLastDrawWinner] = useState(false);
 
     const shuffleArray = (array: number[]): number[] => {
         return [...array].sort(() => Math.random() - 0.5);
@@ -79,6 +89,14 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
 
         setTimeout(() => {
             const drawn = shuffledNumbers.pop()!;
+            const participants = parseInt(numParticipants, 10);
+            const winners = parseInt(numWinners, 10);
+            const winningThreshold = participants - winners;
+
+            if (drawn > winningThreshold) {
+                setIsLastDrawWinner(true);
+            }
+
             setShuffledNumbers([...shuffledNumbers]);
             setLastDrawnNumber(drawn);
             setResults(prev => [...prev, { player: currentPlayer, drawnNumber: drawn }]);
@@ -90,6 +108,7 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
                     setCurrentPlayer(prev => prev + 1);
                     setLastDrawnNumber(null);
                 }
+                setIsLastDrawWinner(false); // Reset for next draw
                 setIsDrawing(false);
             }, 2000); // Time the number is displayed
 
@@ -106,6 +125,7 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
         setLastDrawnNumber(null);
         setError('');
         setIsDrawing(false);
+        setIsLastDrawWinner(false);
     };
 
     useEffect(() => {
@@ -212,8 +232,13 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
                         
                         <div className="my-4 w-full h-48 flex items-center justify-center">
                             {lastDrawnNumber !== null ? (
-                                <div className="w-48 h-48 flex items-center justify-center animate-pop-in">
+                                <div className={`w-48 h-48 rounded-full flex flex-col items-center justify-center animate-pop-in ${isLastDrawWinner ? 'animate-winner-glow' : ''}`}>
                                     <span className="text-8xl font-bold text-teal-400 drop-shadow-[0_4px_8px_rgba(82,246,222,0.4)]">{lastDrawnNumber}</span>
+                                     {isLastDrawWinner && (
+                                         <p className="text-2xl font-bold text-green-400 mt-2 animate-pop-in" style={{ animationDelay: '200ms' }}>
+                                            ✅ Entrou!
+                                        </p>
+                                    )}
                                 </div>
                             ) : (
                                 <button

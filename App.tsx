@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { Player, Team } from './types';
 import PlayerForm from './components/PlayerForm';
@@ -145,7 +146,7 @@ const App: React.FC = () => {
                     {/* Left Column: Inputs and Player List */}
                     <div className="flex flex-col gap-8">
                         <div className="bg-slate-800/50 rounded-xl p-6 shadow-lg border border-slate-700">
-                           <div className="flex justify-between items-center mb-4 gap-4">
+                           <div className="flex flex-col mb-4 gap-4">
                                 <button
                                     onClick={() => setIsTimerModalOpen(true)}
                                     className="flex w-full justify-center items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"

@@ -37,6 +37,7 @@ const LotteryAnimations = () => (
 const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
     const [step, setStep] = useState<'setup' | 'drawing' | 'results'>('setup');
     const [numParticipants, setNumParticipants] = useState<string>('2');
+    const [numWinners, setNumWinners] = useState<string>('1');
     const [currentPlayer, setCurrentPlayer] = useState<number>(1);
     const [results, setResults] = useState<LotteryResult[]>([]);
     const [shuffledNumbers, setShuffledNumbers] = useState<number[]>([]);
@@ -50,10 +51,21 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
 
     const handleStart = () => {
         const participants = parseInt(numParticipants, 10);
+        const winners = parseInt(numWinners, 10);
+
         if (isNaN(participants) || participants < 2) {
             setError('Por favor, insira um número de participantes válido (2 ou mais).');
             return;
         }
+        if (isNaN(winners) || winners < 1) {
+            setError('Por favor, insira um número de vagas válido (1 ou mais).');
+            return;
+        }
+        if (winners >= participants) {
+            setError('O número de vagas deve ser menor que o número de participantes.');
+            return;
+        }
+
         setError('');
         const numbersToDraw = Array.from({ length: participants }, (_, i) => i + 1);
         setShuffledNumbers(shuffleArray(numbersToDraw));
@@ -87,6 +99,7 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
     const handleReset = () => {
         setStep('setup');
         setNumParticipants('2');
+        setNumWinners('1');
         setCurrentPlayer(1);
         setResults([]);
         setShuffledNumbers([]);
@@ -152,23 +165,39 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 {step === 'setup' && (
-                    <div className="flex flex-col items-center gap-4 animate-pop-in">
-                        <label htmlFor="numParticipants" className="text-lg text-slate-300">Quantas pessoas vão participar?</label>
-                        <input
-                            type="number"
-                            id="numParticipants"
-                            min="2"
-                            value={numParticipants}
-                            onChange={(e) => {
-                                setNumParticipants(e.target.value);
-                                if (error) setError('');
-                            }}
-                            className="w-40 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white text-center text-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                        />
-                        {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+                    <div className="flex flex-col items-center gap-6 animate-pop-in">
+                        <div className="w-full text-center">
+                            <label htmlFor="numParticipants" className="text-lg text-slate-300">Quantas pessoas vão participar?</label>
+                            <input
+                                type="number"
+                                id="numParticipants"
+                                min="2"
+                                value={numParticipants}
+                                onChange={(e) => {
+                                    setNumParticipants(e.target.value);
+                                    if (error) setError('');
+                                }}
+                                className="mt-2 w-40 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white text-center text-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                            />
+                        </div>
+                        <div className="w-full text-center">
+                             <label htmlFor="numWinners" className="text-lg text-slate-300">Quantas pessoas vão entrar?</label>
+                            <input
+                                type="number"
+                                id="numWinners"
+                                min="1"
+                                value={numWinners}
+                                onChange={(e) => {
+                                    setNumWinners(e.target.value);
+                                    if (error) setError('');
+                                }}
+                                className="mt-2 w-40 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white text-center text-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                            />
+                        </div>
+                        {error && <p className="text-red-400 text-sm -mt-2 text-center">{error}</p>}
                         <button
                             onClick={handleStart}
-                            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform duration-200 transform hover:scale-105 shadow-lg"
+                            className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform duration-200 transform hover:scale-105 shadow-lg"
                         >
                             Começar Sorteio
                         </button>
@@ -204,28 +233,56 @@ const LotteryModal: React.FC<LotteryModalProps> = ({ isOpen, onClose }) => {
                     </div>
                 )}
                 
-                {step === 'results' && (
-                    <div className="animate-pop-in">
-                        <h3 className="text-xl font-bold mb-4 text-center text-teal-400">🏆 Resultado Final 🏆</h3>
-                        <ul className="space-y-2 bg-slate-800/50 p-4 rounded-lg max-h-64 overflow-y-auto">
-                            {sortedResults.map((res, index) => (
-                                <li key={res.player} className="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg text-lg">
-                                    <span className="font-semibold text-slate-200 flex items-center gap-3">
-                                        <span className="text-2xl w-8 text-center">{getMedal(index)}</span>
-                                        <span>Jogador {res.player}</span>
-                                    </span>
-                                    <span className="text-xl font-bold text-teal-400 bg-slate-800 px-3 py-1 rounded-md">{res.drawnNumber}</span>
-                                </li>
-                            ))}
-                        </ul>
-                        <button
-                            onClick={handleReset}
-                            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform duration-200 transform hover:scale-105 shadow-lg"
-                        >
-                            Sortear Novamente
-                        </button>
-                    </div>
-                )}
+                {step === 'results' && (() => {
+                    const winnersCount = parseInt(numWinners, 10);
+                    const winners = sortedResults.slice(0, winnersCount);
+                    const losers = sortedResults.slice(winnersCount);
+
+                    return (
+                        <div className="animate-pop-in">
+                            <h3 className="text-xl font-bold mb-4 text-center text-teal-400">🏆 Resultado Final 🏆</h3>
+                            <div className="bg-slate-800/50 p-4 rounded-lg max-h-72 overflow-y-auto">
+                                <div>
+                                    <h4 className="text-lg font-semibold text-green-400 mb-2 px-2">✅ Entraram:</h4>
+                                    <ul className="space-y-2">
+                                        {winners.map((res, index) => (
+                                            <li key={res.player} className="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg text-lg">
+                                                <span className="font-semibold text-slate-200 flex items-center gap-3">
+                                                    <span className="text-2xl w-8 text-center">{getMedal(index)}</span>
+                                                    <span>Jogador {res.player}</span>
+                                                </span>
+                                                <span className="text-xl font-bold text-teal-400 bg-slate-800 px-3 py-1 rounded-md">{res.drawnNumber}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                {losers.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="text-lg font-semibold text-red-400 mb-2 px-2">❌ Não entraram:</h4>
+                                        <ul className="space-y-2">
+                                            {losers.map((res, index) => (
+                                                <li key={res.player} className="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg text-lg opacity-70">
+                                                    <span className="font-semibold text-slate-200 flex items-center gap-3">
+                                                        <span className="text-2xl w-8 text-center">{getMedal(index + winnersCount)}</span>
+                                                        <span>Jogador {res.player}</span>
+                                                    </span>
+                                                    <span className="text-xl font-bold text-teal-400 bg-slate-800 px-3 py-1 rounded-md">{res.drawnNumber}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={handleReset}
+                                className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform duration-200 transform hover:scale-105 shadow-lg"
+                            >
+                                Sortear Novamente
+                            </button>
+                        </div>
+                    );
+                })()}
             </div>
         </div>
     );

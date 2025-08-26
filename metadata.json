@@ -1,0 +1,5 @@
+{
+  "name": "Sortear Times",
+  "description": "Um aplicativo para criar times equilibrados com base na nota de habilidade dos jogadores. Adicione jogadores, defina o nível de habilidade de 1 (iniciante) a 5 (craque), especifique o número de jogadores por time e gere equipes justas.",
+  "requestFramePermissions": []
+}

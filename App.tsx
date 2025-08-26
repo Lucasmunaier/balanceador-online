@@ -3,13 +3,18 @@ import { Player, Team } from './types';
 import PlayerForm from './components/PlayerForm';
 import PlayerList from './components/PlayerList';
 import TeamResults from './components/TeamResults';
-import { UsersIcon, SparklesIcon } from './components/icons/Icons';
+import { ClockIcon, SparklesIcon, PokerChipIcon } from './components/icons/Icons';
+import LotteryModal from './components/LotteryModal';
+import TimerModal from './components/TimerModal';
 
 const App: React.FC = () => {
     const [players, setPlayers] = useState<Player[]>([]);
-    const [playersPerTeam, setPlayersPerTeam] = useState<number>(2);
+    const [playersPerTeam, setPlayersPerTeam] = useState<string>('2');
     const [teams, setTeams] = useState<Team[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [sortByRating, setSortByRating] = useState<boolean>(true);
+    const [isLotteryModalOpen, setIsLotteryModalOpen] = useState(false);
+    const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
 
     const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -17,7 +22,7 @@ const App: React.FC = () => {
         const newPlayer: Player = {
             id: Date.now(),
             name,
-            rating,
+            rating: sortByRating ? rating : 1,
         };
         setPlayers(prevPlayers => [...prevPlayers, newPlayer]);
     };
@@ -36,19 +41,25 @@ const App: React.FC = () => {
         setError(null);
         setTeams([]);
     
-        if (players.length === 0 || playersPerTeam <= 0) {
+        const playersPerTeamNum = parseInt(playersPerTeam, 10);
+
+        if (players.length === 0 || isNaN(playersPerTeamNum) || playersPerTeamNum <= 0) {
             setError('Adicione jogadores e defina um número válido de jogadores por time.');
             return;
         }
     
-        // 1. Sort players by rating, with a random tie-breaker for fairness
-        const sortedPlayers = [...players]
-            .sort(() => Math.random() - 0.5)
-            .sort((a, b) => b.rating - a.rating);
+        // 1. Sort players randomly first for tie-breaking and for the random sort option
+        let sortedPlayers = [...players]
+            .sort(() => Math.random() - 0.5);
+        
+        // If sorting by rating is enabled, apply the rating sort
+        if (sortByRating) {
+            sortedPlayers.sort((a, b) => b.rating - a.rating);
+        }
     
         // 2. Determine the exact structure of the teams (e.g., 3 teams of 6, 1 team of 2)
-        const numFullTeams = Math.floor(players.length / playersPerTeam);
-        const playersInLastTeam = players.length % playersPerTeam;
+        const numFullTeams = Math.floor(players.length / playersPerTeamNum);
+        const playersInLastTeam = players.length % playersPerTeamNum;
         const numTotalTeams = playersInLastTeam > 0 ? numFullTeams + 1 : numFullTeams;
 
         if (numTotalTeams === 0) {
@@ -57,7 +68,7 @@ const App: React.FC = () => {
 
         const teamsWithCapacity: (Team & { capacity: number })[] = Array.from({ length: numTotalTeams }, (_, i) => {
             const isFullTeam = i < numFullTeams;
-            const capacity = isFullTeam ? playersPerTeam : playersInLastTeam;
+            const capacity = isFullTeam ? playersPerTeamNum : playersInLastTeam;
             return {
                 id: i,
                 name: `Time ${i + 1}`,
@@ -134,8 +145,37 @@ const App: React.FC = () => {
                     {/* Left Column: Inputs and Player List */}
                     <div className="flex flex-col gap-8">
                         <div className="bg-slate-800/50 rounded-xl p-6 shadow-lg border border-slate-700">
-                           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-teal-400"><UsersIcon />Configuração</h2>
-                            <PlayerForm onAddPlayer={addPlayer} />
+                           <div className="flex justify-between items-center mb-4 gap-4">
+                                <button
+                                    onClick={() => setIsTimerModalOpen(true)}
+                                    className="flex w-full justify-center items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                                >
+                                    <ClockIcon className="w-5 h-5" />
+                                    Temporizador
+                                </button>
+                                <button
+                                    onClick={() => setIsLotteryModalOpen(true)}
+                                    className="flex w-full justify-center items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                                >
+                                    <PokerChipIcon className="w-5 h-5 text-blue-500" />
+                                    Tirar Sorte na tampinha
+                                </button>
+                           </div>
+                            <PlayerForm onAddPlayer={addPlayer} sortByRating={sortByRating} />
+                             <div className="mt-6">
+                                <div className="flex items-center">
+                                    <input
+                                        id="sortByRating"
+                                        type="checkbox"
+                                        checked={sortByRating}
+                                        onChange={(e) => setSortByRating(e.target.checked)}
+                                        className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-500 focus:ring-offset-slate-800 focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="sortByRating" className="ml-2 block text-sm font-medium text-slate-300">
+                                        Equilibrar times por nota
+                                    </label>
+                                </div>
+                            </div>
                             <div className="mt-6">
                                 <label htmlFor="playersPerTeam" className="block text-sm font-medium text-slate-300 mb-2">
                                     Jogadores por Time
@@ -145,7 +185,7 @@ const App: React.FC = () => {
                                     id="playersPerTeam"
                                     min="1"
                                     value={playersPerTeam}
-                                    onChange={(e) => setPlayersPerTeam(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    onChange={(e) => setPlayersPerTeam(e.target.value)}
                                     className="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
                                 />
                             </div>
@@ -158,9 +198,9 @@ const App: React.FC = () => {
                                 Gerar Times
                             </button>
                             {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
-                        </div>
+                        </div
 
-                        <PlayerList players={players} onRemovePlayer={removePlayer} onClearAll={clearAllPlayers} />
+                        <PlayerList players={players} onRemovePlayer={removePlayer} onClearAll={clearAllPlayers} sortByRating={sortByRating} />
                     </div>
 
                     {/* Right Column: Team Results */}
@@ -169,6 +209,7 @@ const App: React.FC = () => {
                             <TeamResults
                                 teams={teams}
                                 unassignedPlayers={unassignedPlayers}
+                                sortByRating={sortByRating}
                             />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
@@ -180,6 +221,14 @@ const App: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <LotteryModal 
+                isOpen={isLotteryModalOpen}
+                onClose={() => setIsLotteryModalOpen(false)}
+            />
+            <TimerModal 
+                isOpen={isTimerModalOpen}
+                onClose={() => setIsTimerModalOpen(false)}
+            />
         </div>
     );
 };

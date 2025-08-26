@@ -6,9 +6,10 @@ interface PlayerListProps {
     players: Player[];
     onRemovePlayer: (id: number) => void;
     onClearAll: () => void;
+    sortByRating: boolean;
 }
 
-const PlayerList: React.FC<PlayerListProps> = ({ players, onRemovePlayer, onClearAll }) => {
+const PlayerList: React.FC<PlayerListProps> = ({ players, onRemovePlayer, onClearAll, sortByRating }) => {
     return (
         <div className="bg-slate-800/50 rounded-xl p-6 shadow-lg border border-slate-700">
             <div className="flex justify-between items-center mb-4">
@@ -41,10 +42,12 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, onRemovePlayer, onClea
                                 <span className="font-medium text-slate-200">{player.name}</span>
                             </div>
                             <div className="flex items-center gap-4">
-                               <div className="flex items-center gap-1" title={`Nota: ${player.rating}`}>
+                               {sortByRating && (
+                                <div className="flex items-center gap-1" title={`Nota: ${player.rating}`}>
                                     <span className="font-bold text-teal-400">{player.rating}</span>
                                     <StarIcon className="w-5 h-5 text-yellow-400" />
                                 </div>
+                               )}
                                 <button
                                     onClick={() => onRemovePlayer(player.id)}
                                     className="text-slate-400 hover:text-red-500 transition-colors"

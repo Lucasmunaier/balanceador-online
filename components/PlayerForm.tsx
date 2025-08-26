@@ -1,13 +1,13 @@
-
 import React, { useState } from 'react';
 import StarRating from './StarRating';
-import { UserPlusIcon } from './icons/Icons';
+import { PlusIcon } from './icons/Icons';
 
 interface PlayerFormProps {
     onAddPlayer: (name: string, rating: number) => void;
+    sortByRating: boolean;
 }
 
-const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer }) => {
+const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer, sortByRating }) => {
     const [name, setName] = useState('');
     const [rating, setRating] = useState(3);
     const [error, setError] = useState('');
@@ -44,16 +44,21 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer }) => {
                  {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
             </div>
             <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Nota (1-5)
-                </label>
-                <StarRating rating={rating} setRating={setRating} />
+                <div className={`flex justify-between items-center mb-2 ${!sortByRating ? 'opacity-50' : ''}`}>
+                    <label className="block text-sm font-medium text-slate-300">
+                        Nota (1-5)
+                    </label>
+                    {!sortByRating && <span className="text-xs text-slate-400">Desativado</span>}
+                </div>
+                <div className={!sortByRating ? 'pointer-events-none opacity-50' : ''}>
+                    <StarRating rating={rating} setRating={setRating} disabled={!sortByRating} />
+                </div>
             </div>
             <button
                 type="submit"
-                className="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                className="w-full flex justify-center items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
             >
-                <UserPlusIcon />
+                <PlusIcon />
                 Adicionar Jogador
             </button>
         </form>

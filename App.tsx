@@ -198,7 +198,7 @@ const App: React.FC = () => {
                                 Gerar Times
                             </button>
                             {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
-                        </div
+                        </div>
 
                         <PlayerList players={players} onRemovePlayer={removePlayer} onClearAll={clearAllPlayers} sortByRating={sortByRating} />
                     </div>

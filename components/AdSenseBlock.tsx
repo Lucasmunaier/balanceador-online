@@ -30,7 +30,7 @@ const AdSenseBlock: React.FC<AdSenseBlockProps> = ({
       <ins
         className="adsbygoogle"
         style={style}
-        data-ad-client={`ca-pub-XXXXXXXXXXXXXXXX`} // IMPORTANTE: Substitua pelo seu ID
+        data-ad-client="ca-pub-2675104243806210"
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive="true"

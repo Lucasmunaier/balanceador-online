@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Team, Player } from '../types';
-import { StarIcon } from './icons/Icons';
+import { StarIcon, SparklesIcon } from './icons/Icons';
 
 interface TeamResultsProps {
     teams: Team[];
@@ -35,7 +35,11 @@ const TeamCard: React.FC<{ team: Team, sortByRating: boolean, showRatings: boole
     </div>
 );
 
-const TeamResults: React.FC<TeamResultsProps> = ({ teams, unassignedPlayers, sortByRating }) => {
+const TeamResults: React.FC<TeamResultsProps> = ({ 
+    teams, 
+    unassignedPlayers, 
+    sortByRating
+}) => {
     const [showRatings, setShowRatings] = useState(true);
 
     return (

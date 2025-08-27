@@ -62,6 +62,6 @@ export const PlusIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-
 
 export const PokerChipIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" clipRule="evenodd" />
+        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM8.547 4.505a8.25 8.25 0 0 1 6.906 0A8.25 8.25 0 0 1 19.495 8.547a8.25 8.25 0 0 1 0 6.906 8.25 8.25 0 0 1-4.042 4.042 8.25 8.25 0 0 1-6.906 0 8.25 8.25 0 0 1-4.042-4.042 8.25 8.25 0 0 1 0-6.906A8.25 8.25 0 0 1 8.547 4.505zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" clipRule="evenodd" />
     </svg>
 );

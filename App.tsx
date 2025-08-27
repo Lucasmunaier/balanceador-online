@@ -7,6 +7,7 @@ import TeamResults from './components/TeamResults';
 import { ClockIcon, SparklesIcon, PokerChipIcon } from './components/icons/Icons';
 import LotteryModal from './components/LotteryModal';
 import TimerModal from './components/TimerModal';
+import AdSenseBlock from './components/AdSenseBlock';
 
 const App: React.FC = () => {
     const [players, setPlayers] = useState<Player[]>([]);
@@ -129,7 +130,6 @@ const App: React.FC = () => {
         return players.filter(p => !assignedPlayerIds.has(p.id));
     }, [players, teams]);
 
-
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 font-sans p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
@@ -141,6 +141,10 @@ const App: React.FC = () => {
                         Crie times equilibrados com base na habilidade dos jogadores.
                     </p>
                 </header>
+
+                <div className="my-6">
+                    <AdSenseBlock adSlot="3839660660" />
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left Column: Inputs and Player List */}

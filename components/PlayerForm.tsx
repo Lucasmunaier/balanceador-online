@@ -10,7 +10,7 @@ interface PlayerFormProps {
 
 const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer, sortByRating }) => {
     const [name, setName] = useState('');
-    const [rating, setRating] = useState(3);
+    const [rating, setRating] = useState(3.5);
     const [isGoalkeeper, setIsGoalkeeper] = useState(false);
     const [error, setError] = useState('');
 
@@ -23,7 +23,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer, sortByRating }) =>
         setError('');
         onAddPlayer(name.trim(), rating, isGoalkeeper);
         setName('');
-        setRating(3);
+        setRating(3.5);
         setIsGoalkeeper(false);
     };
 

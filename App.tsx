@@ -1,13 +1,14 @@
 
 import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { Player, Team } from './types';
+import { Player, Team, EditablePlayer } from './types';
 import PlayerForm from './components/PlayerForm';
 import PlayerList from './components/PlayerList';
 import TeamResults from './components/TeamResults';
-import { ClockIcon, SparklesIcon, PokerChipIcon } from './components/icons/Icons';
+import { ClockIcon, SparklesIcon, PokerChipIcon, AiIcon } from './components/icons/Icons';
 import LotteryModal from './components/LotteryModal';
 import TimerModal from './components/TimerModal';
 import AdSenseBlock from './components/AdSenseBlock';
+import ImportPlayersModal from './components/ImportPlayersModal';
 
 const App: React.FC = () => {
     const [players, setPlayers] = useState<Player[]>([]);
@@ -17,6 +18,7 @@ const App: React.FC = () => {
     const [sortByRating, setSortByRating] = useState<boolean>(true);
     const [isLotteryModalOpen, setIsLotteryModalOpen] = useState(false);
     const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +30,16 @@ const App: React.FC = () => {
             isGoalkeeper,
         };
         setPlayers(prevPlayers => [...prevPlayers, newPlayer]);
+    };
+
+    const addMultiplePlayers = (newPlayers: Omit<EditablePlayer, 'key'>[]) => {
+        const playersToAdd: Player[] = newPlayers.map((p, index) => ({
+            id: Date.now() + index,
+            name: p.name,
+            rating: sortByRating ? p.rating : 1,
+            isGoalkeeper: p.isGoalkeeper,
+        }));
+        setPlayers(prevPlayers => [...prevPlayers, ...playersToAdd]);
     };
 
     const removePlayer = useCallback((id: number) => {
@@ -78,7 +90,7 @@ const App: React.FC = () => {
             };
         });
     
-        // 3. Distribute players using Snake Draft with goalkeeper awareness
+        // 3. Distribute players using Snake Draft with improved goalkeeper logic
         const playersQueue = [...sortedPlayers];
         let round = 0;
         while (playersQueue.length > 0) {
@@ -86,18 +98,34 @@ const App: React.FC = () => {
             let playerWasAssignedInRound = false;
 
             for (const team of teamOrder) {
-                if (playersQueue.length > 0 && team.players.length < team.capacity) {
-                    const teamHasGoalkeeper = team.players.some(p => p.isGoalkeeper);
-                    let playerIndexToAssign = 0; // Default to best available player
+                if (playersQueue.length === 0 || team.players.length >= team.capacity) {
+                    continue;
+                }
 
-                    // If team already has a GK, try to find the best non-GK player
-                    if (teamHasGoalkeeper) {
-                        const nonGkIndex = playersQueue.findIndex(p => !p.isGoalkeeper);
-                        if (nonGkIndex !== -1) {
-                            playerIndexToAssign = nonGkIndex;
-                        }
+                const teamNeedsGoalkeeper = !team.players.some(p => p.isGoalkeeper);
+                let playerIndexToAssign = -1;
+
+                if (teamNeedsGoalkeeper) {
+                    // Prioritize finding the best available goalkeeper
+                    const bestGkIndex = playersQueue.findIndex(p => p.isGoalkeeper);
+                    if (bestGkIndex !== -1) {
+                        playerIndexToAssign = bestGkIndex;
+                    } else {
+                        // No GKs left, take the best available player
+                        playerIndexToAssign = 0;
                     }
-                    
+                } else { // Team already has a goalkeeper
+                    // Prioritize finding the best available field player
+                    const bestFpIndex = playersQueue.findIndex(p => !p.isGoalkeeper);
+                    if (bestFpIndex !== -1) {
+                        playerIndexToAssign = bestFpIndex;
+                    } else {
+                        // No field players left, must take a GK
+                        playerIndexToAssign = 0;
+                    }
+                }
+                
+                if (playerIndexToAssign !== -1) {
                     const player = playersQueue.splice(playerIndexToAssign, 1)[0];
                     team.players.push(player);
                     team.totalRating += player.rating;
@@ -106,7 +134,7 @@ const App: React.FC = () => {
             }
 
             if (!playerWasAssignedInRound) {
-                break;
+                break; // All teams are full, or no assignable players left
             }
             round++;
         }
@@ -153,6 +181,13 @@ const App: React.FC = () => {
                     <div className="flex flex-col gap-8">
                         <div className="bg-slate-800/50 rounded-xl p-6 shadow-lg border border-slate-700">
                            <div className="flex flex-col mb-4 gap-4">
+                               <button
+                                    onClick={() => setIsImportModalOpen(true)}
+                                    className="flex w-full justify-center items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                                >
+                                    <AiIcon className="w-5 h-5 text-teal-400" />
+                                    Importar Lista de Jogadores
+                                </button>
                                 <button
                                     onClick={() => setIsTimerModalOpen(true)}
                                     className="flex w-full justify-center items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
@@ -235,6 +270,11 @@ const App: React.FC = () => {
             <TimerModal 
                 isOpen={isTimerModalOpen}
                 onClose={() => setIsTimerModalOpen(false)}
+            />
+            <ImportPlayersModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onAddPlayers={addMultiplePlayers}
             />
         </div>
     );

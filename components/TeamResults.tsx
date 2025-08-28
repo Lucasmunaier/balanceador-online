@@ -67,9 +67,9 @@ const TeamResults: React.FC<TeamResultsProps> = ({
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex flex-wrap justify-center items-center gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                 <h3 className="text-2xl font-bold text-teal-400">Times Gerados</h3>
-                <div className='flex items-center gap-4'>
+                <div className='flex items-center flex-shrink-0 gap-4'>
                     {teams.length > 0 && sortByRating && (
                         <div className="flex items-center">
                             <input

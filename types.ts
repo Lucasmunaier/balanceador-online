@@ -12,3 +12,10 @@ export interface Team {
     players: Player[];
     totalRating: number;
 }
+
+export interface EditablePlayer {
+    key: number; // Para chaves de lista do React
+    name: string;
+    rating: number;
+    isGoalkeeper: boolean;
+}

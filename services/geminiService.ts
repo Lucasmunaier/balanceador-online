@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { Team } from "../types";
 
 const API_KEY = process.env.API_KEY;
@@ -49,5 +49,48 @@ Use formatação markdown (negrito com **) para enfatizar. Mantenha o tom leve, 
     } catch (error) {
         console.error("Gemini API call failed:", error);
         throw new Error("Failed to get AI commentary.");
+    }
+};
+
+export const extractPlayersFromText = async (text: string): Promise<string[]> => {
+    const model = 'gemini-2.5-flash';
+
+    const prompt = `Analise o seguinte texto, que é uma lista de nomes de jogadores de um grupo de bate-papo. Extraia apenas os nomes das pessoas que vão jogar. Ignore qualquer outro texto, conversa, números que não façam parte de um nome ou detalhes organizacionais. Alguns nomes podem ter números ou símbolos ao lado deles; extraia o nome em si.
+
+Texto de entrada:
+"${text}"
+
+Retorne um objeto JSON com uma única chave "players", que é um array de strings, onde cada string é o nome de um jogador.
+Exemplo: {"players": ["João Silva", "Maria Clara", "Carlos Alberto"]}`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        players: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        
+        const jsonResponse = JSON.parse(response.text);
+        if (jsonResponse.players && Array.isArray(jsonResponse.players)) {
+            return jsonResponse.players;
+        }
+        return [];
+
+    } catch (error) {
+        console.error("Gemini API call for player extraction failed:", error);
+        throw new Error("Falha ao extrair jogadores da lista.");
     }
 };

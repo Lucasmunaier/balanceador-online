@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Player } from '../types';
 import { StarIcon, TrashIcon, UserCircleIcon } from './icons/Icons';
@@ -38,13 +39,16 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, onRemovePlayer, onClea
                             key={player.id}
                             className="flex items-center justify-between bg-slate-700/50 p-3 rounded-lg hover:bg-slate-700 transition-colors"
                         >
-                            <div className="flex items-center">
+                            <div className="flex items-center gap-2">
+                                {player.isGoalkeeper && (
+                                    <span className="text-xs font-bold bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full" title="Goleiro">G</span>
+                                )}
                                 <span className="font-medium text-slate-200">{player.name}</span>
                             </div>
                             <div className="flex items-center gap-4">
                                {sortByRating && (
                                 <div className="flex items-center gap-1" title={`Nota: ${player.rating}`}>
-                                    <span className="font-bold text-teal-400">{player.rating}</span>
+                                    <span className="font-bold text-teal-400">{player.rating.toFixed(1)}</span>
                                     <StarIcon className="w-5 h-5 text-yellow-400" />
                                 </div>
                                )}

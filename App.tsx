@@ -20,11 +20,12 @@ const App: React.FC = () => {
 
     const resultsRef = useRef<HTMLDivElement>(null);
 
-    const addPlayer = (name: string, rating: number) => {
+    const addPlayer = (name: string, rating: number, isGoalkeeper: boolean) => {
         const newPlayer: Player = {
             id: Date.now(),
             name,
             rating: sortByRating ? rating : 1,
+            isGoalkeeper,
         };
         setPlayers(prevPlayers => [...prevPlayers, newPlayer]);
     };
@@ -50,16 +51,13 @@ const App: React.FC = () => {
             return;
         }
     
-        // 1. Sort players randomly first for tie-breaking and for the random sort option
-        let sortedPlayers = [...players]
-            .sort(() => Math.random() - 0.5);
-        
-        // If sorting by rating is enabled, apply the rating sort
+        // 1. Sort all players
+        let sortedPlayers = [...players].sort(() => Math.random() - 0.5);
         if (sortByRating) {
             sortedPlayers.sort((a, b) => b.rating - a.rating);
         }
     
-        // 2. Determine the exact structure of the teams (e.g., 3 teams of 6, 1 team of 2)
+        // 2. Determine team structure
         const numFullTeams = Math.floor(players.length / playersPerTeamNum);
         const playersInLastTeam = players.length % playersPerTeamNum;
         const numTotalTeams = playersInLastTeam > 0 ? numFullTeams + 1 : numFullTeams;
@@ -80,7 +78,7 @@ const App: React.FC = () => {
             };
         });
     
-        // 3. Distribute players using a Snake Draft that respects each team's specific capacity
+        // 3. Distribute players using Snake Draft with goalkeeper awareness
         const playersQueue = [...sortedPlayers];
         let round = 0;
         while (playersQueue.length > 0) {
@@ -88,29 +86,34 @@ const App: React.FC = () => {
             let playerWasAssignedInRound = false;
 
             for (const team of teamOrder) {
-                // Assign a player only if the team is not yet full
                 if (playersQueue.length > 0 && team.players.length < team.capacity) {
-                    const player = playersQueue.shift()!;
+                    const teamHasGoalkeeper = team.players.some(p => p.isGoalkeeper);
+                    let playerIndexToAssign = 0; // Default to best available player
+
+                    // If team already has a GK, try to find the best non-GK player
+                    if (teamHasGoalkeeper) {
+                        const nonGkIndex = playersQueue.findIndex(p => !p.isGoalkeeper);
+                        if (nonGkIndex !== -1) {
+                            playerIndexToAssign = nonGkIndex;
+                        }
+                    }
+                    
+                    const player = playersQueue.splice(playerIndexToAssign, 1)[0];
                     team.players.push(player);
                     team.totalRating += player.rating;
                     playerWasAssignedInRound = true;
                 }
             }
 
-            // Safety break: if a full round completes with no assignments, exit to prevent infinite loop
             if (!playerWasAssignedInRound) {
                 break;
             }
             round++;
         }
     
-        // 4. Remove the temporary 'capacity' property
+        // 4. Finalize teams
         const generatedTeams = teamsWithCapacity.map(({ capacity, ...team }) => team);
-
-        // 5. Sort teams to show incomplete teams last
         const sortedGeneratedTeams = generatedTeams.sort((a, b) => b.players.length - a.players.length);
-    
-        // 6. Rename teams based on their final sorted order for consistent naming
         const finalTeams = sortedGeneratedTeams.map((team, index) => ({
             ...team,
             id: index + 1,
@@ -119,7 +122,6 @@ const App: React.FC = () => {
     
         setTeams(finalTeams);
 
-        // Scroll to results after a short delay
         setTimeout(() => {
             resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);

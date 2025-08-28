@@ -1,15 +1,17 @@
+
 import React, { useState } from 'react';
 import StarRating from './StarRating';
 import { PlusIcon } from './icons/Icons';
 
 interface PlayerFormProps {
-    onAddPlayer: (name: string, rating: number) => void;
+    onAddPlayer: (name: string, rating: number, isGoalkeeper: boolean) => void;
     sortByRating: boolean;
 }
 
 const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer, sortByRating }) => {
     const [name, setName] = useState('');
     const [rating, setRating] = useState(3);
+    const [isGoalkeeper, setIsGoalkeeper] = useState(false);
     const [error, setError] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -19,9 +21,10 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer, sortByRating }) =>
             return;
         }
         setError('');
-        onAddPlayer(name.trim(), rating);
+        onAddPlayer(name.trim(), rating, isGoalkeeper);
         setName('');
         setRating(3);
+        setIsGoalkeeper(false);
     };
 
     return (
@@ -52,6 +55,20 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer, sortByRating }) =>
                 </div>
                 <div className={!sortByRating ? 'pointer-events-none opacity-50' : ''}>
                     <StarRating rating={rating} setRating={setRating} disabled={!sortByRating} />
+                </div>
+            </div>
+             <div className="pt-2">
+                <div className="flex items-center">
+                    <input
+                        id="isGoalkeeper"
+                        type="checkbox"
+                        checked={isGoalkeeper}
+                        onChange={(e) => setIsGoalkeeper(e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-500 focus:ring-offset-slate-800 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <label htmlFor="isGoalkeeper" className="ml-2 block text-sm font-medium text-slate-300">
+                        É Goleiro?
+                    </label>
                 </div>
             </div>
             <button

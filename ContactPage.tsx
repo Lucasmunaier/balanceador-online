@@ -23,7 +23,7 @@ const ContactPage: React.FC = () => {
                         href="mailto:contato@sorteartimes.com"
                         className="mt-4 inline-block text-xl font-bold text-teal-400 hover:text-teal-300 transition-colors break-all"
                     >
-                        contato@sorteartimes.com
+                        munaierapp@gmail.com
                     </a>
                      <p className="mt-6 text-slate-400">
                         Nós lemos todas as mensagens e tentamos responder o mais rápido possível. Seu feedback é muito importante para nós!
